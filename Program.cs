@@ -28,13 +28,11 @@ namespace BotRoss
     {
 
         private DiscordClient _client;
-        private bool _Playing = false;
-        private bool _Audio = true;
-        private List<ulong> _Scrubs = new List<ulong>() { 97830483768901632 };
         public static void Main(string[] args) => new Program().Start(args);
 
         private void Start(string[] args)
         {
+            GlobalSettings.Users.DevId = 98209445493895168;
             #region AsciiLogo
             if (File.Exists("Ascii.txt"))
             {
@@ -45,7 +43,7 @@ namespace BotRoss
             Console.Title = "Bot Ross - Admin Pannel";
             _client = new DiscordClient(x =>
             {
-                x.LogLevel = LogSeverity.Debug;
+                x.LogLevel = LogSeverity.Verbose;
                 x.LogHandler = OnLogMessage;
             }
             );
@@ -60,15 +58,22 @@ namespace BotRoss
                 x.ExecuteHandler += OnCommandExecuted;
                 x.ErrorHandler += OnCommandError;
             });
-
             BotRossCommands.CreateCommands(_client);
+            _client.UsingPermissionLevels(PermissionResolver);
+            #endregion
+
+            #region Audio
+            _client.UsingAudio(x =>
+            {
+                x.Mode = AudioMode.Outgoing;
+            });
             #endregion
 
             #region Connection
-            Console.ForegroundColor = ConsoleColor.Green;
+            //Console.ForegroundColor = ConsoleColor.Green;
             _client.Log.Message += (s, e) => Console.WriteLine($"[{e.Severity}] {e.Source}: {e.Message}");
             _client.MessageReceived += _client_MessageReceived;
-            _client.ExecuteAndWait(async () =>
+           _client.ExecuteAndWait(async () =>
             {
                 while (true)
                     try
@@ -186,73 +191,11 @@ namespace BotRoss
             Console.WriteLine(text);
         }
 
-        public async void SendAudio(string filePath, MessageEventArgs e)
-        {
-            try
-            {
-                if (_Audio == true)
-                    _client.UsingAudio(x =>
-                    {
-                        x.Mode = AudioMode.Outgoing;
-                    });
-                _Audio = false;
-                _Playing = true;
-                var voiceChannel = e.Message.Server.VoiceChannels.FirstOrDefault();
-                if (e.Message.User.VoiceChannel != null)
-                    voiceChannel = e.Message.User.VoiceChannel;
-                var _vClient = await voiceChannel.JoinAudio();
-                var channelCount = 2;
-                var OutFormat = new WaveFormat(48000, 16, channelCount);
-                using (var MP3Reader = new Mp3FileReader("Audio/" + filePath))
-                using (var resampler = new MediaFoundationResampler(MP3Reader, OutFormat))
-                {
-                    resampler.ResamplerQuality = 60;
-                    int blockSize = OutFormat.AverageBytesPerSecond / 50;
-                    byte[] buffer = new byte[blockSize];
-                    int byteCount;
-
-                    while ((byteCount = resampler.Read(buffer, 0, blockSize)) > 0 && _Playing == true)
-                    {
-                        if (byteCount < blockSize)
-                        {
-                            // Incomplete Frame
-                            for (int i = byteCount; i < blockSize; i++)
-                                buffer[i] = 0;
-                        }
-                        _vClient.Send(buffer, 0, blockSize);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"{DateTime.Now} - Exception: {ex.Message}");
-                Console.ResetColor();
-            }
-        }
-
-        public async void LeaveVoiceChannel(MessageEventArgs e)
-        {
-            try
-            {
-                var voiceChannel = e.Message.Server.VoiceChannels.FirstOrDefault();
-                if (e.Message.User.VoiceChannel != null)
-                    voiceChannel = e.Message.User.VoiceChannel;
-                await voiceChannel.LeaveAudio();
-            }
-            catch (Exception ex)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"{DateTime.Now} - Exception: {ex.Message}");
-                Console.ResetColor();
-            }
-
-        }
-
         private void _client_MessageReceived(object sender, MessageEventArgs e)
         {
             Console.WriteLine($"{DateTime.Now} - {e.Message.User}: {e.Message.Text}");
         }
+
         private int PermissionResolver(User user, Channel channel)
         {
             if (user.Id == GlobalSettings.Users.DevId)
@@ -261,7 +204,7 @@ namespace BotRoss
             {
                 if (user == channel.Server.Owner)
                     return (int)PermissionLevel.ServerOwner;
-
+                
                 var serverPerms = user.ServerPermissions;
                 if (serverPerms.ManageRoles)
                     return (int)PermissionLevel.ServerAdmin;
