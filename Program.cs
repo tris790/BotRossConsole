@@ -78,7 +78,7 @@ namespace BotRoss
                 while (true)
                     try
                     {
-                        await _client.Connect("MTY4MjE0ODc2MzgzMjE1NjE2.CeoVzw.AYvm82FsA3XJbMNDxOUtP8YEbpA");
+                        await _client.Connect("");
                         break;
                     }
                     catch (Exception ex)
@@ -194,6 +194,8 @@ namespace BotRoss
         private void _client_MessageReceived(object sender, MessageEventArgs e)
         {
             Console.WriteLine($"{DateTime.Now} - {e.Message.User}: {e.Message.Text}");
+            if (e.Message.Text.Contains("@Barack Obama Ross"))
+                Console.Beep();
         }
 
         private int PermissionResolver(User user, Channel channel)

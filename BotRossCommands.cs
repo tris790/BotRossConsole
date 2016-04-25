@@ -30,12 +30,36 @@ namespace BotRoss
 
             #region Utility
 
+            _client.GetService<CommandService>().CreateCommand("servers")
+            .Description("Lists all current server that Bot Ross is a member.")
+            .Do(async e =>
+            {
+                string message = "";
+                var req = from server in _client.Servers
+                          orderby server.Name
+                          select server;
+                foreach (var server in req)
+                    message += $"**Server:** {server}\n";
+
+                await e.Channel.SendMessage($"{message}");
+            });
+
+
+            _client.GetService<CommandService>().CreateCommand("invitelink")
+           .Alias(new string[] { "invlink", "authorizationlink" })
+           .Description("Gives the link to authorize Bot Ross to join your server.")
+           .Do(async e =>
+           {
+               await e.Channel.SendMessage($"https://discordapp.com/oauth2/authorize?&client_id=168214818459877376&scope=bot&permissions=66321471");
+           });
+
             _client.GetService<CommandService>().CreateCommand("botinfo")
-           .Alias(new string[] { "information" })
+           .Alias(new string[] { "information", "infobot" })
            .Description("Gives information about the bot.")
            .Do(async e =>
            {
-               await e.Channel.SendMessage($"```**Memory Usage:** {Environment.WorkingSet.ToReadableMemory()}\n**Uptime:** {(DateTime.Now - Process.GetCurrentProcess().StartTime).ToReadableString()}```");
+               var owner = _client.GetUser(e, GlobalSettings.Users.DevId).Result;
+               await e.Channel.SendMessage($"**Owner:** {owner.Name} {owner.Discriminator}\n**Memory Usage:** {Environment.WorkingSet.ToReadableMemory()}\n**Uptime:** {(DateTime.Now - Process.GetCurrentProcess().StartTime).ToReadableString()}");
            });
 
             //DELETE MESSAGE
@@ -103,7 +127,7 @@ namespace BotRoss
             .Do(async e =>
             {
                 var user = _client.FindUser(e, e.GetArg(0), e.GetArg(1));
-                await e.Channel.SendMessage($"```xl\nUser: {user.Result.Name}\nID: {user.Result.Id}\nStatus: {user.Result.Status}\nVoice Channel: {user.Result.VoiceChannel}\nCurrent Game: {user.Result.CurrentGame}\nAvatar: {user.Result.AvatarUrl}\nLast Activity: {user.Result.LastActivityAt}\nLast Online: {user.Result.LastOnlineAt}```");
+                await e.Channel.SendMessage($"**User:** {user.Result.Name}\n**ID:** {user.Result.Id}\n**Status:** {user.Result.Status}\n**Voice Channel:** {user.Result.VoiceChannel}\n**Current Game:** {user.Result.CurrentGame}\n**Avatar:** {user.Result.AvatarUrl}\n**Last Activity:** {user.Result.LastActivityAt}\n**Last Online:** {user.Result.LastOnlineAt}");
             });
 
             //HELP COMMANDS
@@ -262,7 +286,7 @@ namespace BotRoss
                         break;
                 }
                 await e.Channel.SendMessage($"{answer}");
-            });           
+            });
             #endregion
         }
         static public async Task
