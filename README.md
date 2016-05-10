@@ -1,2 +1,2 @@
 # BotRossConsole
-Discord Client
+Discord Bot
