@@ -28,7 +28,6 @@ namespace BotRoss
         private DiscordClient _client;
         private bool _Playing = false;
         private bool _Audio = true;
-        private List<ulong> _Scrubs = new List<ulong>() { 97830483768901632 };
 
         private void Start(string[] args)
         {
@@ -56,7 +55,7 @@ namespace BotRoss
                 while (true)
                     try
                     {
-                        await _client.Connect("MTY4MjE0ODc2MzgzMjE1NjE2.CeoVzw.AYvm82FsA3XJbMNDxOUtP8YEbpA");
+                        await _client.Connect("00000000000000000"); //replace with your own
                         break;
                     }
                     catch (Exception ex)
@@ -71,8 +70,6 @@ namespace BotRoss
 
         public void Commands(MessageEventArgs e)
         {
-            if (_Scrubs.Contains(e.User.Id))
-                return;
             if (e.Message.Text.ToLower() == "!gtfo")
             {
                 _client.Disconnect();

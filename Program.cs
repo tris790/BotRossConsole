@@ -28,11 +28,12 @@ namespace BotRoss
     {
 
         private DiscordClient _client;
+        public const string clientId = "00000000000000000"; //replace with your own
         public static void Main(string[] args) => new Program().Start(args);
 
         private void Start(string[] args)
         {
-            GlobalSettings.Users.DevId = 98209445493895168;
+            GlobalSettings.Users.DevId = 00000000000000000; //replace with your own
             #region AsciiLogo
             if (File.Exists("Ascii.txt"))
             {
@@ -40,16 +41,13 @@ namespace BotRoss
                 Console.WriteLine(ascii);
             }
             #endregion
-            Console.Title = "Bot Ross - Admin Pannel";
+            Console.Title = "Bot Ross - Admin Console";
             _client = new DiscordClient(x =>
             {
                 x.LogLevel = LogSeverity.Verbose;
                 x.LogHandler = OnLogMessage;
             }
             );
-
-            #region LogMessages
-            #endregion
 
             #region Commands
             _client.UsingCommands(x => {
@@ -73,12 +71,12 @@ namespace BotRoss
             //Console.ForegroundColor = ConsoleColor.Green;
             _client.Log.Message += (s, e) => Console.WriteLine($"[{e.Severity}] {e.Source}: {e.Message}");
             _client.MessageReceived += _client_MessageReceived;
-           _client.ExecuteAndWait(async () =>
+          _client.ExecuteAndWait(async () =>
             {
                 while (true)
                     try
                     {
-                        await _client.Connect("");
+                        await _client.Connect(clientId);
                         break;
                     }
                     catch (Exception ex)
@@ -124,7 +122,7 @@ namespace BotRoss
 
         private void OnCommandExecuted(object sender, CommandEventArgs e)
         {
-            _client.Log.Info("Command", $"{e.Command.Text} ({e.User.Name})");
+            _client.Log.Info("Command", $"{e.Command.Text} ({e.User.Name})");           
         }
 
         private void OnLogMessage(object sender, LogMessageEventArgs e)
